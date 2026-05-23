@@ -106,4 +106,8 @@ class IdempotencyHeaderMiddleware:
                 await self.backend.clear_idempotency_key(idempotency_key)
             await send(message)
 
-        await self.app(scope, receive, send_wrapper)
+        try:
+            await self.app(scope, receive, send_wrapper)
+        except Exception:
+            await self.backend.clear_idempotency_key(idempotency_key)
+            raise

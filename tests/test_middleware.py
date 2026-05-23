@@ -31,6 +31,24 @@ json_response_endpoints = [
 ]
 
 
+async def test_unhandled_exception_in_route(applicable_method: http_call) -> None:
+    idempotency_header = {"Idempotency-Key": uuid4().hex}
+
+    response = await applicable_method(
+        "/exception-route?raise_exception=true",
+        headers=idempotency_header,
+    )
+    assert response.status_code == 500
+
+    # Second request
+    response = await applicable_method(
+        "/exception-route?raise_exception=false",
+        headers=idempotency_header,
+    )
+    assert response.json() == dummy_response
+    assert "idempotent-replayed" not in dict(response.headers)
+
+
 @pytest.mark.parametrize("endpoint", json_response_endpoints)
 async def test_idempotence_works_for_json_responses(
     applicable_method: http_call, endpoint: str

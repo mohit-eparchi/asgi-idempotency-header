@@ -212,6 +212,14 @@ def app_with_middleware(method_config):
     async def create_streaming_response():
         return StreamingResponse(fake_video_streamer())
 
+    @app.patch("/exception-route")
+    @app.post("/exception-route")
+    @app.put("/exception-route")
+    async def exception_route(raise_exception: bool):
+        if raise_exception:
+            raise RuntimeError
+        return dummy_response
+
     yield app
     # Remove the middleware
     app.user_middleware.pop(0)
