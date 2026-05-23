@@ -103,7 +103,7 @@ class IdempotencyHeaderMiddleware:
                     payload=json_payload,
                     status_code=response_state.status_code,
                 )
-
+                await self.backend.clear_idempotency_key(idempotency_key)
             await send(message)
 
         await self.app(scope, receive, send_wrapper)

@@ -48,6 +48,29 @@ async def test_idempotence_works_for_json_responses(
     assert dict(response.headers)["idempotent-replayed"] == "true"
 
 
+async def test_expiration_of_idempotency_key_from_active_idempotency_keys(
+    applicable_method,
+) -> None:
+    endpoint = "/json-response"
+    idempotency_header = {"Idempotency-Key": uuid4().hex}
+
+    # First request
+    response = await applicable_method(endpoint, headers=idempotency_header)
+    assert response.json() == dummy_response
+    assert "idempotent-replayed" not in dict(response.headers)
+
+    # Second request
+    response = await applicable_method(endpoint, headers=idempotency_header)
+    assert response.json() == dummy_response
+    assert dict(response.headers)["idempotent-replayed"] == "true"
+
+    # Third request after >2 seconds to test clearing of idempotency key from set
+    await asyncio.sleep(2.1)
+    response = await applicable_method(endpoint, headers=idempotency_header)
+    assert response.json() == dummy_response
+    assert "idempotent-replayed" not in dict(response.headers)
+
+
 other_response_endpoints = [
     "/xml-response",
     "/html-response",
