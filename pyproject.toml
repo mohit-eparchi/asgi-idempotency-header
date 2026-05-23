@@ -1,68 +1,88 @@
-[tool.poetry]
-name = 'asgi-idempotency-header'
-version = '0.2.0'
-description = 'Enable idempotent operations for your endpoints.'
-authors = ['Sondre Lillebø Gundersen <sondrelg@live.no>']
-maintainers = ["Patrick Gleeson <pgleeson@spoton.com>"]
-license = 'BSD-3'
-readme = 'README.md'
-homepage = 'https://github.com/snok/asgi-idempotency-header'
-repository = 'https://github.com/snok/asgi-idempotency-header'
+[project]
+name = "asgi-idempotency-header"
+version = "0.2.0"
+description = "Enable idempotent operations for your endpoints."
+authors = [{ name = "Sondre Lillebø Gundersen", email = "sondrelg@live.no" }]
+requires-python = ">=3.8,<4"
+readme = "README.md"
+# license = "BSD-3"
+license = { text = "BSD-3" }
+# license = { file = "LICENSE" }
+maintainers = [{ name = "Patrick Gleeson", email = "pgleeson@spoton.com" }]
 keywords = [
-    'idempotence', 'idempotency', 'header', 'fastapi', 'starlette', 'asgi',
-    'middleware', 'api', 'endpoint', 'http'
+    "idempotence",
+    "idempotency",
+    "header",
+    "fastapi",
+    "starlette",
+    "asgi",
+    "middleware",
+    "api",
+    "endpoint",
+    "http",
 ]
 classifiers = [
-    'Development Status :: 4 - Beta',
-    'Environment :: Web Environment',
-    'Intended Audience :: Developers',
-    'License :: OSI Approved :: BSD License',
-    'Framework :: AsyncIO',
-    'Operating System :: OS Independent',
-    'Topic :: Internet :: WWW/HTTP',
-    'Topic :: Internet :: WWW/HTTP :: Dynamic Content',
-    'Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware',
-    'Programming Language :: Python',
-    'Programming Language :: Python :: 3.7',
-    'Programming Language :: Python :: 3.8',
-    'Programming Language :: Python :: 3.9',
-    'Programming Language :: Python :: 3.10',
-    'Topic :: Software Development :: Libraries',
-    'Topic :: Software Development :: Libraries :: Application Frameworks',
-    'Topic :: Software Development :: Libraries :: Python Modules',
-    'Typing :: Typed',
+    "Development Status :: 4 - Beta",
+    "Environment :: Web Environment",
+    "Intended Audience :: Developers",
+    "License :: OSI Approved :: BSD License",
+    "Framework :: AsyncIO",
+    "Operating System :: OS Independent",
+    "Topic :: Internet :: WWW/HTTP",
+    "Topic :: Internet :: WWW/HTTP :: Dynamic Content",
+    "Topic :: Internet :: WWW/HTTP :: WSGI :: Middleware",
+    "Programming Language :: Python",
+    "Programming Language :: Python :: 3.7",
+    "Programming Language :: Python :: 3.8",
+    "Programming Language :: Python :: 3.9",
+    "Programming Language :: Python :: 3.10",
+    "Topic :: Software Development :: Libraries",
+    "Topic :: Software Development :: Libraries :: Application Frameworks",
+    "Topic :: Software Development :: Libraries :: Python Modules",
+    "Typing :: Typed",
+    "Programming Language :: Python :: 3",
+    "Programming Language :: Python :: 3.11",
+    "Programming Language :: Python :: 3.12",
+    "Programming Language :: Python :: 3.13",
+    "Programming Language :: Python :: 3.14",
 ]
-packages = [
-    { include = 'idempotency_header_middleware' },
+dependencies = ["fastapi>=0.70.0", "redis>=4.2", "lupa"]
+
+[project.urls]
+Homepage = "https://github.com/snok/asgi-idempotency-header"
+Repository = "https://github.com/snok/asgi-idempotency-header"
+
+[dependency-groups]
+dev = [
+    "pytest",
+    "coverage",
+    "pre-commit",
+    "httpx",
+    "pytest-cov",
+    "pytest-asyncio",
+    "orjson",
+    "ujson",
+    "fakeredis",
 ]
 
-[tool.poetry.dependencies]
-python = '^3.8'
-fastapi = { version = '^0.70.0', optional = true }
-starlette = { version = '*', optional = true }
-redis = { version = '^4.2', optional = true }
-lupa = { version = '*', optional = true }  # needed for redis locks
-
-[tool.poetry.dev-dependencies]
-pytest = '*'
-coverage = '*'
-pre-commit = '*'
-httpx = '*'
-pytest-cov = '*'
-pytest-asyncio = '*'
-orjson = '*'
-ujson = '*'
-fakeredis = '*'
-
-[tool.poetry.extras]
-fastapi = ['fastapi']
-starlette = ['starlette']
-redis = ['redis', 'lupa']
-all = ['redis', 'lupa', 'fastapi', 'starlette']
 
 [build-system]
-requires = ['poetry-core>=1.0.0']
-build-backend = 'poetry.core.masonry.api'
+requires = ["hatchling", "hatch-vcs"]
+build-backend = "hatchling.build"
+
+[tool.hatch.build.targets.sdist]
+include = [
+    "idempotency_header_middleware",
+    "pyproject.toml",
+    "README.md",
+    "LICENSE",
+]
+exclude = [".gitignore"]
+# artifacts = ["locust/webui/dist"]
+
+[tool.hatch.build.targets.wheel]
+include = ["idempotency_header_middleware"]
+# artifacts = ["locust/webui/dist"]
 
 [tool.black]
 quiet = true
@@ -75,14 +95,9 @@ profile = 'black'
 line_length = 120
 
 [tool.coverage.run]
-omit = [
-    'idempotency_header_middleware/backends/base.py'
-]
+omit = ['idempotency_header_middleware/backends/base.py']
 
 [tool.coverage.report]
 show_missing = true
 skip_covered = true
-exclude_lines = [
-    "if TYPE_CHECKING:",
-    "pragma: no cover",
-]
+exclude_lines = ["if TYPE_CHECKING:", "pragma: no cover"]
