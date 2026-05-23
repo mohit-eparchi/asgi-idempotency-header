@@ -46,7 +46,12 @@ classifiers = [
     "Programming Language :: Python :: 3.13",
     "Programming Language :: Python :: 3.14",
 ]
-dependencies = ["fastapi>=0.70.0", "redis>=4.2", "lupa"]
+dependencies = [
+    "fastapi>=0.70.0",
+    "redis>=4.2",
+    "lupa",
+    "starlette>=0.44.0",
+]
 
 [project.urls]
 Homepage = "https://github.com/snok/asgi-idempotency-header"
@@ -63,6 +68,8 @@ dev = [
     "orjson",
     "ujson",
     "fakeredis",
+    "ruff>=0.15.14",
+    "mypy>=1.14.1",
 ]
 
 
@@ -84,15 +91,36 @@ exclude = [".gitignore"]
 include = ["idempotency_header_middleware"]
 # artifacts = ["locust/webui/dist"]
 
-[tool.black]
-quiet = true
-line-length = 120
-skip-string-normalization = true
-experimental-string-processing = true
 
-[tool.isort]
-profile = 'black'
-line_length = 120
+[tool.ruff]
+line-length = 88
+indent-width = 4
+target-version = "py314"
+
+[tool.ruff.lint]
+extend-select = ["E","F","I","UP"]
+ignore = []
+
+[tool.ruff.format]
+quote-style = "double"
+
+[tool.mypy]
+python_version = 3.13
+show_error_codes = true
+show_traceback = true
+warn_unused_ignores = true
+ignore_missing_imports = true
+warn_redundant_casts = true
+warn_unused_configs = true
+warn_no_return = false
+incremental = true
+disallow_untyped_calls = true
+disallow_untyped_defs = true
+check_untyped_defs = true
+
+[tool.pytest.ini_options]
+addopts = "--cov=idempotency_header_middleware --cov-report term-missing"
+testpaths = ["tests"]
 
 [tool.coverage.run]
 omit = ['idempotency_header_middleware/backends/base.py']
