@@ -1,6 +1,6 @@
 import time
 from dataclasses import dataclass, field
-from typing import Any, Dict, Optional, Set
+from typing import Any
 
 from starlette.responses import JSONResponse
 
@@ -19,35 +19,39 @@ class MemoryBackend(Backend):
     The backend is mainly here for local development or testing.
     """
 
-    expiry: Optional[int] = 60 * 60 * 24
+    expiry: int | None = 60 * 60 * 24
 
-    response_store: Dict[str, Dict[str, Any]] = field(default_factory=dict)
-    keys: Set[str] = field(default_factory=set)
+    response_store: dict[str, dict[str, Any]] = field(default_factory=dict)
+    keys: set[str] = field(default_factory=set)
 
-    async def get_stored_response(self, idempotency_key: str) -> Optional[JSONResponse]:
+    async def get_stored_response(self, idempotency_key: str) -> JSONResponse | None:
         """
         Return a stored response if it exists, otherwise return None.
         """
         if idempotency_key not in self.response_store:
             return None
 
-        if (expiry := self.response_store[idempotency_key]['expiry']) and expiry <= time.time():
+        if (
+            expiry := self.response_store[idempotency_key]["expiry"]
+        ) and expiry <= time.time():
             del self.response_store[idempotency_key]
             return None
 
         return JSONResponse(
-            self.response_store[idempotency_key]['json'],
-            status_code=self.response_store[idempotency_key]['status_code'],
+            self.response_store[idempotency_key]["json"],
+            status_code=self.response_store[idempotency_key]["status_code"],
         )
 
-    async def store_response_data(self, idempotency_key: str, payload: dict, status_code: int) -> None:
+    async def store_response_data(
+        self, idempotency_key: str, payload: dict, status_code: int
+    ) -> None:
         """
         Store a response in memory.
         """
         self.response_store[idempotency_key] = {
-            'expiry': time.time() + self.expiry if self.expiry else None,
-            'json': payload,
-            'status_code': status_code,
+            "expiry": time.time() + self.expiry if self.expiry else None,
+            "json": payload,
+            "status_code": status_code,
         }
 
     async def store_idempotency_key(self, idempotency_key: str) -> bool:

@@ -12,10 +12,10 @@ from tests.conftest import dummy_response
 pytestmark = pytest.mark.asyncio
 
 base_methods = [
-    'get_stored_response',
-    'store_response_data',
-    'store_idempotency_key',
-    'clear_idempotency_key',
+    "get_stored_response",
+    "store_response_data",
+    "store_idempotency_key",
+    "clear_idempotency_key",
 ]
 
 
@@ -28,7 +28,9 @@ def test_base_backend():
 redis = fakeredis.aioredis.FakeRedis(decode_responses=True)
 
 
-@pytest.mark.parametrize('backend', [RedisBackend(redis, expiry=1), MemoryBackend(expiry=1)])
+@pytest.mark.parametrize(
+    "backend", [RedisBackend(redis, expiry=1), MemoryBackend(expiry=1)]
+)
 async def test_backend(backend: Backend):
     assert issubclass(backend.__class__, Backend)
 
