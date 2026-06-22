@@ -57,12 +57,18 @@ class IdempotencyHeaderMiddleware:
             response = JSONResponse(payload, 422)
             return await response(scope, receive, send)
 
-        if stored_response := await self.backend.get_stored_response(idempotency_key):
+        idempotency_key_store_key = (
+            scope["method"] + ":" + scope["path"] + ":" + idempotency_key
+        )
+
+        if stored_response := await self.backend.get_stored_response(
+            idempotency_key_store_key
+        ):
             stored_response.headers[self.replay_header_key] = "true"
             return await stored_response(scope, receive, send)
 
         # Check if request is already pending
-        if await self.backend.store_idempotency_key(idempotency_key):
+        if await self.backend.store_idempotency_key(idempotency_key_store_key):
             payload = {
                 "detail": f"Request already pending for idempotency key '{idempotency_key}'"
             }
@@ -86,7 +92,7 @@ class IdempotencyHeaderMiddleware:
                     and response_state.response_headers["content-type"]
                     != "application/json"
                 ):
-                    await self.backend.clear_idempotency_key(idempotency_key)
+                    await self.backend.clear_idempotency_key(idempotency_key_store_key)
                     await send(message)
                     return
 
@@ -94,20 +100,20 @@ class IdempotencyHeaderMiddleware:
                     json_payload = json.loads(message["body"])
                 except JSONDecodeError as e:
                     logger.info("Failed to save JSON response: %s", e)
-                    await self.backend.clear_idempotency_key(idempotency_key)
+                    await self.backend.clear_idempotency_key(idempotency_key_store_key)
                     await send(message)
                     return
 
                 await self.backend.store_response_data(
-                    idempotency_key=idempotency_key,
+                    idempotency_key=idempotency_key_store_key,
                     payload=json_payload,
                     status_code=response_state.status_code,
                 )
-                await self.backend.clear_idempotency_key(idempotency_key)
+                await self.backend.clear_idempotency_key(idempotency_key_store_key)
             await send(message)
 
         try:
             await self.app(scope, receive, send_wrapper)
         except Exception:
-            await self.backend.clear_idempotency_key(idempotency_key)
+            await self.backend.clear_idempotency_key(idempotency_key_store_key)
             raise
